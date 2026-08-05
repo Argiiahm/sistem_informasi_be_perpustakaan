@@ -2,7 +2,8 @@ import { z } from 'zod';
 
 const phoneRegex = /^(\+62|62|0)8[1-9][0-9]{7,11}$/;
 
-export const AuthSchema = z.object({
+// Register
+export const AuthSchemaRegister = z.object({
     fullname: z
         .string()
         .trim()
@@ -15,4 +16,11 @@ export const AuthSchema = z.object({
     password: z.string().min(8, 'Password Minimum 8 Character'),
 });
 
-export type AuthInput = z.infer<typeof AuthSchema>;
+// Login
+export const AuthSchemaLogin = z.object({
+    email: z.string().min(1, 'Email is Required').trim().email(),
+    password: z.string().min(8, 'Password Minimum 8 Character'),
+});
+
+export type AuthInputRegister = z.infer<typeof AuthSchemaRegister>;
+export type AuthInputLogin = z.infer<typeof AuthSchemaLogin>;

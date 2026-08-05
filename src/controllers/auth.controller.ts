@@ -1,13 +1,19 @@
 import * as AuthService from '../services/auth.service.js';
 import { asyncHandler } from '../utils/asyncHandler.js';
 import type { Request, Response } from 'express';
-import { AuthSchema, type AuthInput } from '../validations/auth.schema.js';
+import {
+    AuthSchemaLogin,
+    AuthSchemaRegister,
+    type AuthInputLogin,
+    type AuthInputRegister,
+} from '../validations/auth.schema.js';
+import { refreshCookieOptions } from '../constants/cookie.js';
 
 // Register
 export const Register = asyncHandler(
-    async (req: Request<object, object, AuthInput>, res: Response) => {
+    async (req: Request<object, object, AuthInputRegister>, res: Response) => {
         // validate with zod
-        const validateData = AuthSchema.safeParse(req.body);
+        const validateData = AuthSchemaRegister.safeParse(req.body);
         if (!validateData.success) {
             return res.status(400).json({
                 success: false,
@@ -15,14 +21,36 @@ export const Register = asyncHandler(
             });
         }
 
-        const user = await AuthService.Register({
-            ...validateData.data,
-        });
-
+        const user = await AuthService.Register(validateData.data);
         return res.status(201).json({
             success: true,
             message: 'User created successfully',
             data: user,
+        });
+    }
+);
+
+// Login
+export const Login = asyncHandler(
+    async (req: Request<object, object, AuthInputLogin>, res: Response) => {
+        // validate with zod
+        const validateData = AuthSchemaLogin.safeParse(req.body);
+        if (!validateData.success) {
+            return res.status(400).json({
+                success: false,
+                errors: validateData.error.flatten(),
+            });
+        }
+
+        const result = await AuthService.Login(validateData.data);
+        res.cookie('refreshToken', result.refreshToken, refreshCookieOptions);
+
+        return res.status(200).json({
+            success: true,
+            message: 'Login Successfully',
+            data: {
+                accessToken: result.accessToken,
+            },
         });
     }
 );
