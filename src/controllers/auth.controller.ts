@@ -1,5 +1,5 @@
 import * as AuthService from '../services/auth.service.js';
-import { asyncHandler } from '../validations/asyncHandler.js';
+import { asyncHandler } from '../utils/asyncHandler.js';
 import type { Request, Response } from 'express';
 import { AuthSchema, type AuthInput } from '../validations/auth.schema.js';
 
