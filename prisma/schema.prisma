@@ -13,3 +13,35 @@ datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
+
+enum Role {
+  user
+  admin
+  superadmin
+}
+
+model User {
+  id       String @id @default(uuid())
+  fullname String
+  no_telp  String @unique
+  email    String @unique
+
+  password String
+  role     Role   @default(user)
+
+  refreshTokens RefreshToken[]
+
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+}
+
+model RefreshToken {
+  id     String @id @default(uuid())
+  token  String @unique
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  expiresAt DateTime
+  createdAt DateTime  @default(now())
+  revokedAt DateTime?
+}
