@@ -136,3 +136,32 @@ export const Refresh = async (refreshToken: string) => {
         accessToken,
     };
 };
+
+// Logout
+export const Logout = async (refreshToken: string) => {
+    if (!refreshToken) {
+        throw createHttpError.Unauthorized('RefreshToken Required.');
+    }
+
+    // verify JWT
+    const payload = verifyRefreshToken(refreshToken);
+    const session = await prisma.refreshToken.findUnique({
+        where: { id: payload.tokenId },
+    });
+
+    if (!session) {
+        throw createHttpError.Unauthorized('Invalid RefreshToken');
+    }
+
+    if (session.revokedAt) {
+        throw createHttpError.Unauthorized('Refresh token already revoked.');
+    }
+
+    // revoke session
+    await prisma.refreshToken.update({
+        where: { id: session.id },
+        data: { revokedAt: new Date() },
+    });
+
+    return;
+};

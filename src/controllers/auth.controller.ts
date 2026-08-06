@@ -66,3 +66,17 @@ export const Refresh = asyncHandler(async (req: Request, res: Response) => {
         },
     });
 });
+
+// Logout
+export const Logout = asyncHandler(async (req: Request, res: Response) => {
+    const refreshToken = req.cookies.refreshToken;
+    await AuthService.Logout(refreshToken);
+
+    // clear Cookie
+    res.clearCookie('refreshToken', refreshCookieOptions);
+
+    return res.status(200).json({
+        success: true,
+        message: 'Logout successfully.',
+    });
+});
