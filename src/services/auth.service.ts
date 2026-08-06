@@ -2,7 +2,7 @@ import { prisma } from '../config/prisma.js';
 import bcrypt from 'bcrypt';
 import createHttpError from 'http-errors';
 import type { AuthInputLogin, AuthInputRegister } from '../validations/auth.schema.js';
-import { createAccessToken, createRefreshToken } from '../utils/jwt.js';
+import { createAccessToken, createRefreshToken, verifyRefreshToken } from '../utils/jwt.js';
 import { randomUUID } from 'crypto';
 
 // Register
@@ -87,5 +87,52 @@ export const Login = async (data: AuthInputLogin) => {
     return {
         accessToken,
         refreshToken,
+    };
+};
+
+// Refresh
+export const Refresh = async (refreshToken: string) => {
+    if (!refreshToken) {
+        throw createHttpError.Unauthorized('RefreshToken Required.');
+    }
+
+    // verify JWT
+    const payload = verifyRefreshToken(refreshToken);
+
+    // find Session
+    const session = await prisma.refreshToken.findUnique({
+        where: { id: payload.tokenId },
+        include: { user: true },
+    });
+
+    if (!session) {
+        throw createHttpError.Unauthorized('Invalid RefreshToken');
+    }
+
+    // Check Revoked
+    if (session.revokedAt) {
+        throw createHttpError.Unauthorized('RefreshToken Revoked');
+    }
+
+    // Check Expired
+    if (session.expiresAt < new Date()) {
+        throw createHttpError.Unauthorized('RefreshToken Expires');
+    }
+
+    // Compare Hash
+    const valid = await bcrypt.compare(refreshToken, session.tokenHash);
+    if (!valid) {
+        throw createHttpError.Unauthorized('Invalid RefreshToken');
+    }
+
+    // Generate NEW AccessToken
+    const accessToken = createAccessToken({
+        id: session.user.id,
+        email: session.user.email,
+        role: session.user.role,
+    });
+
+    return {
+        accessToken,
     };
 };

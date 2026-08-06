@@ -54,3 +54,15 @@ export const Login = asyncHandler(
         });
     }
 );
+
+// Refresh
+export const Refresh = asyncHandler(async (req: Request, res: Response) => {
+    const refreshToken = req.cookies.refreshToken;
+    const result = await AuthService.Refresh(refreshToken);
+    return res.status(200).json({
+        success: true,
+        data: {
+            accessToken: result.accessToken,
+        },
+    });
+});
