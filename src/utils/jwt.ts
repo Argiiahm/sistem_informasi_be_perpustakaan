@@ -26,6 +26,11 @@ export function createRefreshToken(payload: RefreshTokenPayload) {
     });
 }
 
+// verify accessToken
+export function verifyAccessToken(token: string) {
+    return jwt.verify(token, process.env.ACCESS_KEY!) as AccessTokenPayload;
+}
+
 // verify refreshToken
 export function verifyRefreshToken(token: string) {
     return jwt.verify(token, process.env.REFRESH_KEY!) as RefreshTokenPayload;

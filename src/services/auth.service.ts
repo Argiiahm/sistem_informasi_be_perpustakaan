@@ -165,3 +165,19 @@ export const Logout = async (refreshToken: string) => {
 
     return;
 };
+
+// Me
+export const Me = async (userId: string) => {
+    const user = await prisma.user.findFirst({
+        where: { id: userId },
+        select: {
+            id: true,
+            fullname: true,
+            no_telp: true,
+            email: true,
+            role: true,
+        },
+    });
+
+    return user;
+};

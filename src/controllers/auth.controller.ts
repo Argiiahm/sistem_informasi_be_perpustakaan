@@ -80,3 +80,19 @@ export const Logout = asyncHandler(async (req: Request, res: Response) => {
         message: 'Logout successfully.',
     });
 });
+
+// Me
+export const Me = asyncHandler(async (req: Request, res: Response) => {
+    if (!req.user || !req.user.id) {
+        return res.status(401).json({
+            success: false,
+            message: 'Unauthorization',
+        });
+    }
+
+    const user = await AuthService.Me(req.user.id);
+    return res.status(200).json({
+        success: true,
+        data: user,
+    });
+});
