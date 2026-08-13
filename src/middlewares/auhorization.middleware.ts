@@ -5,9 +5,13 @@ import { Role } from '../generated/prisma/client.js';
 export const authorization =
     (...roles: Role[]) =>
     (req: Request, _res: Response, next: NextFunction) => {
-        if (!roles.includes(req.user?.role!)) {
-            next(createHttpError.Forbidden('Access Denied.'));
+        if (!req.user?.role) {
+            return next(createHttpError.Unauthorized('Unauthorized'));
         }
 
-        next();
+        if (!roles.includes(req.user.role)) {
+            return next(createHttpError.Forbidden('Access denied.'));
+        }
+
+        return next();
     };

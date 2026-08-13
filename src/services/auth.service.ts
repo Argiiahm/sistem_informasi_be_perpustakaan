@@ -35,7 +35,7 @@ export const Register = async (data: AuthInputRegister) => {
             no_telp: true,
             email: true,
             role: true,
-            created_at: true,
+            createdAt: true,
         },
     });
 

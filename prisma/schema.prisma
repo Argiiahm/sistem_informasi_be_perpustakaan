@@ -42,6 +42,7 @@ model RefreshToken {
 
   tokenHash String
 
+  // Relasi to user 
   userId String
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
@@ -50,6 +51,17 @@ model RefreshToken {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+// table Category
+model Category {
+  id   String @id @default(uuid())
+  name String @unique
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  books Book[]
 }
 
 // table book
@@ -62,6 +74,10 @@ model Book {
   stockBuku       Int      @default(0)
   synopsis        String
   coverBook       String?
+
+  // relasi to Category
+  categoryId String
+  category   Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
