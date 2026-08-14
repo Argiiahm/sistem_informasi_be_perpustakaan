@@ -6,7 +6,7 @@ export const getUserSchema = z.object({
     search: z.string().trim().optional(),
     role: z.enum(['user', 'admin', 'superadmin']).optional(),
     sortBy: z.enum(['fullname', 'email', 'createdAt']).default('createdAt'),
-    sortOrder: z.enum(['asc', 'desc']).default('desc'),
+    orderBy: z.enum(['asc', 'desc']).default('desc'),
 });
 
 export type getUserInput = z.infer<typeof getUserSchema>;

@@ -1,10 +1,93 @@
 import createHttpError from 'http-errors';
 import { prisma } from '../config/prisma.js';
-import type { BookInput } from '../validations/book.schema.js';
+import type { BookInput, getBookInput } from '../validations/book.schema.js';
 
 // get Books
-export const getAllBook = async () => {
-    return await prisma.book.findMany();
+export const getAllBook = async (data: getBookInput) => {
+    const { page, limit, search, categoryId, sortBy, orderBy } = data;
+    const skip = (page - 1) * limit;
+
+    const where = {
+        ...(search
+            ? {
+                  OR: [
+                      {
+                          bookCode: {
+                              contains: search,
+                              mode: 'insensitive' as const,
+                          },
+                      },
+                      {
+                          title: {
+                              contains: search,
+                              mode: 'insensitive' as const,
+                          },
+                      },
+                      {
+                          title: {
+                              contains: search,
+                              mode: 'insensitive' as const,
+                          },
+                      },
+                      {
+                          author: {
+                              contains: search,
+                              mode: 'insensitive' as const,
+                          },
+                      },
+                  ],
+              }
+            : {}),
+
+        ...(categoryId
+            ? {
+                  categoryId,
+              }
+            : {}),
+    };
+
+    const [books, count] = await Promise.all([
+        prisma.book.findMany({
+            where,
+            skip,
+            take: limit,
+            orderBy: {
+                [sortBy]: orderBy,
+            },
+            select: {
+                id: true,
+                bookCode: true,
+                title: true,
+                author: true,
+                publicationYear: true,
+                stockBuku: true,
+                synopsis: true,
+                coverBook: true,
+                createdAt: true,
+
+                category: {
+                    select: {
+                        id: true,
+                        name: true,
+                    },
+                },
+            },
+        }),
+
+        prisma.book.count({ where }),
+    ]);
+
+    return {
+        data: books,
+        pagination: {
+            page,
+            limit,
+            count,
+            countPage: Math.ceil(count / limit),
+            hasNextPage: page < Math.ceil(count / limit),
+            hasPreviousPage: page > 1,
+        },
+    };
 };
 
 // get Book byID

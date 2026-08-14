@@ -1,14 +1,23 @@
 import * as BookService from '../services/book.service.js';
 import { asyncHandler } from '../utils/asyncHandler.js';
 import type { Request, Response } from 'express';
-import { BookSchema } from '../validations/book.schema.js';
+import { BookSchema, getBookSchema } from '../validations/book.schema.js';
 
 // get Books
-export const getAllBook = asyncHandler(async (_req: Request, res: Response) => {
-    const book = await BookService.getAllBook();
+export const getAllBook = asyncHandler(async (req: Request, res: Response) => {
+    // validate
+    const validateData = getBookSchema.safeParse(req.query);
+    if (!validateData.success) {
+        return res.status(400).json({
+            success: false,
+            errors: validateData.error.flatten(),
+        });
+    }
+    const result = await BookService.getAllBook(validateData.data);
     return res.status(200).json({
         success: true,
-        data: book,
+        data: result.data,
+        pagination: result.pagination,
     });
 });
 

@@ -3,7 +3,7 @@ import type { getUserInput } from '../validations/user.schema.js';
 
 // getUser
 export const getUsers = async (data: getUserInput) => {
-    const { page, limit, search, role, sortBy, sortOrder } = data;
+    const { page, limit, search, role, sortBy, orderBy } = data;
     // skip digunakan untuk pagination
     // Atau Artinya menentukan Halaman.
     // contoh:
@@ -63,7 +63,7 @@ export const getUsers = async (data: getUserInput) => {
             skip,
             take: limit,
             orderBy: {
-                [sortBy]: sortOrder,
+                [sortBy]: orderBy,
             },
             select: {
                 id: true,
