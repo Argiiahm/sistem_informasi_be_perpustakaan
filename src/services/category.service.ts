@@ -1,15 +1,56 @@
 import createHttpError from 'http-errors';
 import { prisma } from '../config/prisma.js';
-import type { CategoryInput } from '../validations/category.schema.js';
+import { type CategoryInput, type GetCategoryInput } from '../validations/category.schema.js';
 
 // get Categories
-export const getCategories = async () => {
-    return await prisma.category.findMany({
-        select: {
-            id: true,
-            name: true,
+export const getCategories = async (data: GetCategoryInput) => {
+    const { page, limit, search, sortBy, orderBy } = data;
+    const skip = (page - 1) * limit;
+
+    const where = {
+        ...(search
+            ? {
+                  OR: [
+                      {
+                          name: {
+                              contains: search,
+                              mode: 'insensitive' as const,
+                          },
+                      },
+                  ],
+              }
+            : {}),
+    };
+
+    const [categories, count] = await Promise.all([
+        prisma.category.findMany({
+            where,
+            skip,
+            take: limit,
+            orderBy: {
+                [sortBy]: orderBy,
+            },
+            select: {
+                id: true,
+                name: true,
+            },
+        }),
+
+        // total categories
+        prisma.category.count({ where }),
+    ]);
+
+    return {
+        items: categories,
+        pagination: {
+            page,
+            limit,
+            count,
+            countPages: Math.ceil(page / limit),
+            hasNextPage: page < Math.ceil(page / limit),
+            hasPreviousPage: page > 1,
         },
-    });
+    };
 };
 
 // get Category byId

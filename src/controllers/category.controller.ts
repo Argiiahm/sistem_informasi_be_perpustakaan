@@ -1,14 +1,28 @@
 import * as CategoryService from '../services/category.service.js';
 import type { Request, Response } from 'express';
 import { asyncHandler } from '../utils/asyncHandler.js';
-import { CategorySchema, type CategoryInput } from '../validations/category.schema.js';
+import {
+    CategorySchema,
+    GetCategorySchema,
+    type CategoryInput,
+} from '../validations/category.schema.js';
 
 // get Categories
 export const getCategories = asyncHandler(async (req: Request, res: Response) => {
-    const category = await CategoryService.getCategories();
+    // validate with zod
+    const validateData = GetCategorySchema.safeParse(req.query);
+    if (!validateData.success) {
+        return res.status(400).json({
+            success: false,
+            errors: validateData.error.flatten(),
+        });
+    }
+
+    const result = await CategoryService.getCategories(validateData.data);
     return res.status(200).json({
         success: true,
-        data: category,
+        data: result.items,
+        pagination: result.pagination,
     });
 });
 
