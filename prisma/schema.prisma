@@ -14,10 +14,19 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// Enum Role
 enum Role {
   user
   admin
   superadmin
+}
+
+// Enum Status borrowBook
+enum StatusborrowBook {
+  pending
+  accepted
+  rejected
+  returned
 }
 
 // table User
@@ -31,6 +40,8 @@ model User {
   role     Role   @default(user)
 
   refreshTokens RefreshToken[]
+  // relasi to borrowBook
+  borrowBooks   borrowBook[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -79,6 +90,26 @@ model Book {
   categoryId String
   category   Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
 
+  // relasi to borrowBook
+  borrowBooks borrowBook[]
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+// table borrowBook
+model borrowBook {
+  id String @id @default(uuid())
+
+  // relasi to Book
+  bookId String
+  book   Book   @relation(fields: [bookId], references: [id], onDelete: Cascade)
+
+  // relasi to user
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  loanDate DateTime         @default(now())
+  dueDate  DateTime
+  status   StatusborrowBook @default(pending)
 }
