@@ -10,4 +10,4 @@ export const AcceptBarrowSchmea = z.object({
 });
 
 export type BorrowBookInput = z.infer<typeof BorrowBookSchema>;
-export type AcceptBorrowInput = z.infer<typeof AcceptBarrowSchmea>;
+export type AcceptBarrowSchmea = z.infer<typeof AcceptBarrowSchmea>;

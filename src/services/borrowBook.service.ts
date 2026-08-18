@@ -1,9 +1,9 @@
 import createHttpError from 'http-errors';
 import { prisma } from '../config/prisma.js';
-import type { AcceptBorrowInput, BorrowBookInput } from '../validations/borrowBook.schema.js';
+import type { AcceptBarrowSchmea, BorrowBookInput } from '../validations/borrowBook.schema.js';
 
 // BorrowBook
-export const BorrowBook = async (data: BorrowBookInput, userId: string) => {
+export const borrowBook = async (data: BorrowBookInput, userId: string) => {
     const book = await prisma.book.findFirst({
         where: { id: data.bookId },
     });
@@ -32,11 +32,7 @@ export const BorrowBook = async (data: BorrowBookInput, userId: string) => {
 };
 
 // Accept BorrowBook
-export const AcceptBorrowBook = async (borowId: string, data: AcceptBorrowInput) => {
-    // FIX THIS FOR TOMOROW!
-    // IF USER IS LOGOUT OR NOT AUTHENTICATION
-    // WHY RETURN BOOK IS VALID?
-
+export const acceptBorrowBook = async (borowId: string, data: AcceptBarrowSchmea) => {
     const borrowBook = await prisma.borrowBook.findFirst({
         where: { id: borowId },
     });
@@ -73,6 +69,7 @@ export const AcceptBorrowBook = async (borowId: string, data: AcceptBorrowInput)
             },
         });
 
+        // Update
         const updatedBorrowBook = await tx.borrowBook.update({
             where: { id: borowId },
             data: {
@@ -82,6 +79,41 @@ export const AcceptBorrowBook = async (borowId: string, data: AcceptBorrowInput)
         });
 
         return updatedBorrowBook;
+    });
+
+    return result;
+};
+
+// Reject BorrowBook
+export const rejectBorrowBook = async (borowId: string) => {
+    const borowBook = await prisma.borrowBook.findFirst({
+        where: { id: borowId },
+    });
+
+    if (!borowBook) {
+        throw createHttpError.NotFound('BorrowBook Not Found');
+    }
+
+    if (borowBook.status !== 'pending') {
+        throw createHttpError.BadRequest('Only Supported Status Pending.');
+    }
+
+    // Find Book
+    const book = await prisma.book.findFirst({
+        where: { id: borowBook.bookId },
+    });
+
+    // check if bookId is Invalid
+    if (!book) {
+        throw createHttpError.NotFound('Book Not Found.');
+    }
+
+    // Update Status Borrow
+    const result = await prisma.borrowBook.update({
+        where: { id: borowBook.id },
+        data: {
+            status: 'rejected',
+        },
     });
 
     return result;
