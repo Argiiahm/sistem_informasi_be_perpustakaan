@@ -1,6 +1,117 @@
 import createHttpError from 'http-errors';
 import { prisma } from '../config/prisma.js';
-import type { AcceptBarrowSchmea, BorrowBookInput } from '../validations/borrowBook.schema.js';
+import type {
+    AcceptBorrowInput,
+    BorrowBookInput,
+    GetBorrowInput,
+} from '../validations/borrowBook.schema.js';
+
+// Get All BorrowBook For Admin
+export const getAllBorrow = async (data: GetBorrowInput) => {
+    const { page, limit, search, status, sortBy, orderBy } = data;
+    const skip = (page - 1) * limit;
+
+    const where = {
+        ...(search
+            ? {
+                  OR: [
+                      {
+                          user: {
+                              OR: [
+                                  {
+                                      fullname: {
+                                          contains: search,
+                                          mode: 'insensitive' as const,
+                                      },
+                                  },
+                                  {
+                                      email: {
+                                          contains: search,
+                                          mode: 'insensitive' as const,
+                                      },
+                                  },
+                              ],
+                          },
+                      },
+                      {
+                          book: {
+                              OR: [
+                                  {
+                                      bookCode: {
+                                          contains: search,
+                                          mode: 'insensitive' as const,
+                                      },
+                                  },
+                                  {
+                                      title: {
+                                          contains: search,
+                                          mode: 'insensitive' as const,
+                                      },
+                                  },
+                              ],
+                          },
+                      },
+                  ],
+              }
+            : {}),
+
+        ...(status
+            ? {
+                  status,
+              }
+            : {}),
+    };
+
+    const [borrows, count] = await Promise.all([
+        prisma.borrowBook.findMany({
+            where,
+            skip,
+            take: limit,
+            orderBy: {
+                [sortBy]: orderBy,
+            },
+            select: {
+                id: true,
+                bookId: true,
+                userId: true,
+                loanDate: true,
+                dueDate: true,
+                status: true,
+                user: {
+                    select: {
+                        fullname: true,
+                        email: true,
+                    },
+                },
+                book: {
+                    select: {
+                        bookCode: true,
+                        title: true,
+                        category: {
+                            select: {
+                                name: true,
+                            },
+                        },
+                    },
+                },
+            },
+        }),
+
+        prisma.borrowBook.count({ where }),
+    ]);
+
+    return {
+        items: borrows,
+        pagination: {
+            page,
+            limit,
+            count,
+            countPages: Math.ceil(count / limit),
+            hasNextPage: page < Math.ceil(count / limit),
+            hasPreviousPage: page > 1,
+        },
+    };
+};
 
 // BorrowBook
 export const borrowBook = async (data: BorrowBookInput, userId: string) => {
@@ -32,7 +143,7 @@ export const borrowBook = async (data: BorrowBookInput, userId: string) => {
 };
 
 // Accept BorrowBook
-export const acceptBorrowBook = async (borowId: string, data: AcceptBarrowSchmea) => {
+export const acceptBorrowBook = async (borowId: string, data: AcceptBorrowInput) => {
     const borrowBook = await prisma.borrowBook.findFirst({
         where: { id: borowId },
     });

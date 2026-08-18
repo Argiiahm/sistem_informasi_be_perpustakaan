@@ -2,7 +2,29 @@ import createHttpError from 'http-errors';
 import * as BorrowService from '../services/borrowBook.service.js';
 import { asyncHandler } from '../utils/asyncHandler.js';
 import type { Request, Response } from 'express';
-import { AcceptBarrowSchmea, BorrowBookSchema } from '../validations/borrowBook.schema.js';
+import {
+    AcceptBorrowSchmea,
+    BorrowBookSchema,
+    GetBorrowBook,
+} from '../validations/borrowBook.schema.js';
+
+// get All BorrowsBook
+export const getAllBorrow = asyncHandler(async (req: Request, res: Response) => {
+    const validateData = GetBorrowBook.safeParse(req.query);
+    if (!validateData.success) {
+        return res.status(400).json({
+            success: false,
+            errors: validateData.error.flatten(),
+        });
+    }
+
+    const result = await BorrowService.getAllBorrow(validateData.data);
+    return res.status(200).json({
+        success: true,
+        data: result.items,
+        pagination: result.pagination,
+    });
+});
 
 // BorrowBook
 export const borrowBook = asyncHandler(async (req: Request, res: Response) => {
@@ -39,7 +61,7 @@ export const acceptBorrowBook = asyncHandler(
         }
 
         // validate with zod
-        const validateData = AcceptBarrowSchmea.safeParse(req.body);
+        const validateData = AcceptBorrowSchmea.safeParse(req.body);
         if (!validateData.success) {
             return res.status(400).json({
                 success: false,

@@ -2,6 +2,7 @@ import { Router } from 'express';
 import {
     acceptBorrowBook,
     borrowBook,
+    getAllBorrow,
     rejectBorrowBook,
 } from '../controllers/borrowBook.controller.js';
 import { authentication } from '../middlewares/authentication.middleware.js';
@@ -10,7 +11,9 @@ import { authorization } from '../middlewares/auhorization.middleware.js';
 const router = Router();
 
 router.post('/borrow/book', authentication, borrowBook);
+
 // Default, role Admin as Manage this EndPoint.
+router.get('/borrows', authentication, authorization('admin'), getAllBorrow);
 // Accept
 router.put(
     '/borrow/book/:borrowId/accepted',
