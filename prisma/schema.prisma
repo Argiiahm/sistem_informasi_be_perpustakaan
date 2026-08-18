@@ -110,6 +110,6 @@ model borrowBook {
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   loanDate DateTime         @default(now())
-  dueDate  DateTime
+  dueDate  DateTime?
   status   StatusborrowBook @default(pending)
 }
