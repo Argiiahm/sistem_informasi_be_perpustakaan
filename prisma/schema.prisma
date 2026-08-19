@@ -29,6 +29,12 @@ enum StatusborrowBook {
   returned
 }
 
+// Enum Status ReturnBook
+enum StatusReturnBook {
+  ontime
+  duedate
+}
+
 // table User
 model User {
   id       String @id @default(uuid())
@@ -109,7 +115,18 @@ model borrowBook {
   userId String
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  loanDate DateTime         @default(now())
-  dueDate  DateTime?
-  status   StatusborrowBook @default(pending)
+  loanDate    DateTime         @default(now())
+  dueDate     DateTime?
+  status      StatusborrowBook @default(pending)
+  returnBooks returnBook[]
+}
+
+// table returnBook
+model returnBook {
+  id         String           @id @default(uuid())
+  fineAmount Int              @default(0)
+  status     StatusReturnBook @default(ontime)
+  returnDate DateTime
+  borrowId   String
+  borrow     borrowBook       @relation(fields: [borrowId], references: [id], onDelete: Cascade)
 }

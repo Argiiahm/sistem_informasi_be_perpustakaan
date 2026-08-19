@@ -7,6 +7,7 @@ import bookRoutes from './routes/bookRoutes.js';
 import categoryRoutes from './routes/categoryRoutes.js';
 import usersRoutes from './routes/userRoutes.js';
 import borrowBookRoutes from './routes/borrowBookRoutes.js';
+import returnBorrowRoutes from './routes/returnBookRoutes.js';
 
 const app = express();
 
@@ -19,6 +20,7 @@ app.use('/api/v1', bookRoutes);
 app.use('/api/v1', categoryRoutes);
 app.use('/api/v1', usersRoutes);
 app.use('/api/v1', borrowBookRoutes);
+app.use('/api/v1', returnBorrowRoutes);
 
 app.use(errorHandler);
 

@@ -13,17 +13,17 @@ const router = Router();
 router.post('/borrow/book', authentication, borrowBook);
 
 // Default, role Admin as Manage this EndPoint.
-router.get('/borrows', authentication, authorization('admin'), getAllBorrow);
+router.get('/admin/borrows', authentication, authorization('admin'), getAllBorrow);
 // Accept
 router.put(
-    '/borrow/book/:borrowId/accepted',
+    '/admin/borrow/book/:borrowId/accepted',
     authentication,
     authorization('admin'),
     acceptBorrowBook
 );
 // Reject
 router.put(
-    '/borrow/book/:borrowId/rejected',
+    '/admin/borrow/book/:borrowId/rejected',
     authentication,
     authorization('admin'),
     rejectBorrowBook
