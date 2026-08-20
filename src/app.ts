@@ -8,6 +8,7 @@ import categoryRoutes from './routes/categoryRoutes.js';
 import usersRoutes from './routes/userRoutes.js';
 import borrowBookRoutes from './routes/borrowBookRoutes.js';
 import returnBorrowRoutes from './routes/returnBookRoutes.js';
+import { apiRateLimit } from './middlewares/ratelimit.middleware.js';
 
 const app = express();
 
@@ -15,6 +16,7 @@ app.use(cors());
 app.use(express.json());
 app.use(cookieParser());
 
+app.use('/api/v1', apiRateLimit);
 app.use('/api/v1', authRoutes);
 app.use('/api/v1', bookRoutes);
 app.use('/api/v1', categoryRoutes);
