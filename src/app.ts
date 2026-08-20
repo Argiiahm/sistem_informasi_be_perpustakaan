@@ -1,4 +1,5 @@
 import express from 'express';
+import helmet from 'helmet';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import { errorHandler } from './middlewares/error.middleware.js';
@@ -12,6 +13,7 @@ import { apiRateLimit } from './middlewares/ratelimit.middleware.js';
 
 const app = express();
 
+app.use(helmet());
 app.use(cors());
 app.use(express.json());
 app.use(cookieParser());
