@@ -13,3 +13,120 @@ datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
+
+// Enum Role
+enum Role {
+  user
+  admin
+  superadmin
+}
+
+// Enum Status borrowBook
+enum StatusborrowBook {
+  pending
+  accepted
+  rejected
+  returned
+}
+
+// Enum Status ReturnBook
+enum StatusReturnBook {
+  ontime
+  duedate
+}
+
+// table User
+model User {
+  id       String @id @default(uuid())
+  fullname String
+  no_telp  String @unique
+  email    String @unique
+
+  password String
+  role     Role   @default(user)
+
+  refreshTokens RefreshToken[]
+  // relasi to borrowBook
+  borrowBooks   borrowBook[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// table refreshToken
+model RefreshToken {
+  id String @id
+
+  tokenHash String
+
+  // Relasi to user 
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  expiresAt DateTime
+  revokedAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// table Category
+model Category {
+  id   String @id @default(uuid())
+  name String @unique
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  books Book[]
+}
+
+// table book
+model Book {
+  id              String   @id @default(uuid())
+  bookCode        String   @unique
+  title           String
+  author          String
+  publicationYear DateTime
+  stockBuku       Int      @default(0)
+  synopsis        String
+  coverBook       String?
+
+  // relasi to Category
+  categoryId String
+  category   Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  // relasi to borrowBook
+  borrowBooks borrowBook[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// table borrowBook
+model borrowBook {
+  id String @id @default(uuid())
+
+  // relasi to Book
+  bookId String
+  book   Book   @relation(fields: [bookId], references: [id], onDelete: Cascade)
+
+  // relasi to user
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  loanDate    DateTime         @default(now())
+  dueDate     DateTime?
+  status      StatusborrowBook @default(pending)
+  returnBooks returnBook[]
+}
+
+// table returnBook
+model returnBook {
+  id         String           @id @default(uuid())
+  fineAmount Int              @default(0)
+  status     StatusReturnBook @default(ontime)
+  returnDate DateTime
+  borrowId   String
+  borrow     borrowBook       @relation(fields: [borrowId], references: [id], onDelete: Cascade)
+}
