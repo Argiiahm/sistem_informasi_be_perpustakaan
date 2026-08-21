@@ -1,5 +1,7 @@
+import createHttpError from 'http-errors';
 import { prisma } from '../config/prisma.js';
-import type { getUserInput } from '../validations/user.schema.js';
+import type { getUserInput, UserInput } from '../validations/user.schema.js';
+import bcrypt from 'bcrypt';
 
 // getUser
 export const getUsers = async (data: getUserInput) => {
@@ -91,4 +93,79 @@ export const getUsers = async (data: getUserInput) => {
             hasPreviousPage: page > 1,
         },
     };
+};
+
+// Create User
+export const createUser = async (data: UserInput) => {
+    const [existEmail, existTelp] = await Promise.all([
+        prisma.user.findUnique({ where: { email: data.email } }),
+        prisma.user.findUnique({ where: { no_telp: data.no_telp } }),
+    ]);
+
+    if (existEmail) {
+        throw createHttpError.Conflict('Email Already Registered.');
+    }
+
+    if (existTelp) {
+        throw createHttpError.Conflict('No Telp Already Registered.');
+    }
+
+    const hashPassword = await bcrypt.hash(data.password, 10);
+    const user = await prisma.user.create({
+        data: {
+            fullname: data.fullname,
+            email: data.email,
+            no_telp: data.no_telp,
+            password: hashPassword,
+            role: data.role,
+        },
+    });
+
+    return user;
+};
+
+// Update User
+export const updateUser = async (userId: string, data: UserInput) => {
+    const [user, alreadyEmail, alreadyNoTelp] = await Promise.all([
+        prisma.user.findFirst({ where: { id: userId } }),
+        prisma.user.findFirst({ where: { email: data.email, id: { not: userId } } }),
+        prisma.user.findFirst({ where: { no_telp: data.no_telp, id: { not: userId } } }),
+    ]);
+
+    if (!user) {
+        throw createHttpError.NotFound('User Not Found');
+    }
+
+    if (alreadyEmail) {
+        throw createHttpError.Conflict('Email Already Registered.');
+    }
+
+    if (alreadyNoTelp) {
+        throw createHttpError.Conflict('No Telp Already Registered.');
+    }
+
+    const hashPassword = await bcrypt.hash(data.password, 10);
+    return await prisma.user.update({
+        where: { id: user.id },
+        data: {
+            fullname: data.fullname,
+            email: data.email,
+            no_telp: data.no_telp,
+            password: hashPassword,
+            role: data.role,
+        },
+    });
+};
+
+// Delete user
+export const deleteUser = async (userId: string) => {
+    const user = await prisma.user.findFirst({ where: { id: userId } });
+    if (!user) {
+        throw createHttpError.NotFound('User Not Found');
+    }
+
+    // Delete user
+    return await prisma.user.delete({
+        where: { id: user.id },
+    });
 };
