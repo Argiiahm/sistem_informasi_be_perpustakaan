@@ -53,7 +53,6 @@ export const getRequestReturnBook = asyncHandler(async (req: Request, res: Respo
     }
 
     const result = await ReturnService.getRequestReturnBook(validateData.data);
-    console.log(result);
     return res.status(200).json({
         success: true,
         data: result,

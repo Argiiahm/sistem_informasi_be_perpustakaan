@@ -11,9 +11,10 @@ import { authorization } from '../middlewares/auhorization.middleware.js';
 
 const router = Router();
 
-router.get('/books', authentication, getAllBook);
-router.get('/book/:id', authentication, getBook);
+router.get('/books', getAllBook);
+router.get('/book/:id', getBook);
 
+// CRUD BOOK
 router.post('/book', authentication, authorization('admin', 'superadmin'), createBook);
 router.put('/book/:id', authentication, authorization('admin', 'superadmin'), updateBook);
 router.delete('/book/:id', authentication, authorization('admin', 'superadmin'), deleteBook);

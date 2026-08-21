@@ -135,6 +135,9 @@ export const getRequestReturnBook = async (data: GetReturnBookInput) => {
                 status: true,
                 borrow: {
                     select: {
+                        loanDate: true,
+                        dueDate: true,
+                        status: true,
                         user: {
                             select: {
                                 fullname: true,
@@ -170,8 +173,8 @@ export const confirmRequestReturnBook = async (borrowId: string) => {
         throw createHttpError.NotFound('Invalid Request Returned.');
     }
 
-    if (borrow.status !== 'accepted' || borrow.dueDate === null) {
-        throw createHttpError.NotFound('Only Supported status Accepted and dueDate not Null.');
+    if (borrow.status !== 'accepted') {
+        throw createHttpError.NotFound('Only Supported status Accepted.');
     }
 
     // Transaction for Update Status Borrow And Update StockBook
